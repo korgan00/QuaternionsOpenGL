@@ -19,12 +19,16 @@ void HandleMousePassiveMotion(int x, int y);
 void HandleReshape(int,int);
 void HandleIdle(void);
 
+void UpdateCameraState();
+
 int fullscreen = FALSE;
 
 int currentbutton = -1;
 double rotatespeed = 3;
 double tSpeed = 0.05;
 float t = 0;
+
+VECTOR3D movement = { 0, 0, 0 };
 
 CAMERA camera;
 FRUSTUM centerFrustum;
@@ -102,13 +106,11 @@ void Display(void)
     glMatrixMode(GL_MODELVIEW);
     
     glLoadIdentity();
-    updateEulerOrientation(camera.euler);
-    camera.direction = getForward(camera.euler);
-    camera.up = getUp(camera.euler);
+    UpdateCameraState();
     VECTOR3D target = Add(camera.position, camera.direction);
     //gluLookAt(camera.position.x,camera.position.y,camera.position.z, target.x , target.y, target.z, camera.up.x,camera.up.y,camera.up.z); //QUITAR
     
-// TODO
+
     MATRIX4 lookAtMatrix = lookAt(camera.position, target, camera.up);
     glLoadMatrixf(lookAtMatrix.m);
 
@@ -166,7 +168,7 @@ void Lighting(void) {
     glEnable(GL_LIGHTING);
 }
 
-void HandleKeyboard(unsigned char key,int x, int y)
+void HandleKeyboard(unsigned char key, int x, int y)
 {
     switch (key) {
         case ESC:
@@ -192,6 +194,22 @@ void HandleKeyboard(unsigned char key,int x, int y)
         case 'h':
         case 'H':
             InitCamera(0);
+            break;
+        case 'w':
+        case 'W':
+            movement.z = 1;
+            break;
+        case 'a':
+        case 'A':
+            movement.x = 1;
+            break;
+        case 's':
+        case 'S':
+            movement.z = -1;
+            break;
+        case 'd':
+        case 'D':
+            movement.x = -1;
             break;
     }
 }
@@ -242,9 +260,26 @@ void InitCamera(int mode)
     camera.position.y = 0;
     camera.position.z = 20;
     
-    camera.euler = { 0, 0, 0, {0, {0, 0, 0}} };
+    camera.euler = { 0, 0, 0, {0, {0, 0, 0}}};
     updateEulerOrientation(camera.euler);
     camera.direction = getForward(camera.euler);
     camera.up = getUp(camera.euler);
 }
 
+
+void UpdateCameraState() {
+    updateEulerOrientation(camera.euler);
+    camera.direction = getForward(camera.euler);
+    camera.up = getUp(camera.euler);
+
+    movement = Normalize(movement);
+
+    // updateForwardMovement
+    camera.position = Add(camera.position, MultiplyWithScalar(movement.z, camera.direction));
+    // updateSideMovement
+    VECTOR3D sideVector = Normalize(CrossProduct(camera.up, camera.direction));
+    camera.position = Add(camera.position, MultiplyWithScalar(movement.x, sideVector));
+    //printf("%f, %f, %f\n", p.x, p.y, p.z);
+
+    movement = { 0, 0, 0 };
+}

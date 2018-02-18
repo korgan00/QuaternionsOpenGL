@@ -39,6 +39,7 @@ double Magnitude(VECTOR3D a) {
 }
 
 VECTOR3D Normalize(VECTOR3D a) {
+    if (a.x == 0 && a.y == 0 && a.z == 0) return {0, 0, 0};
 	return MultiplyWithScalar(1 / Magnitude(a), a);
 }
 
