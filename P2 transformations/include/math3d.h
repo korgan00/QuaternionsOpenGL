@@ -42,7 +42,8 @@ static const COLOUR green = {0,1,0};
 static const COLOUR blue = {0,0,1};
 
 static const COLOUR darkred = {0.6,0,0};
-static const COLOUR darkgreen = {0,0.6,0};
+static const COLOUR darkgreen = { 0,0.6,0 };
+static const COLOUR darkblue = { 0,0,0.6 };
 
 static const VECTOR3D YAW_AXIS = { 0, 1, 0 };
 static const VECTOR3D PITCH_AXIS = { 1, 0, 0 };

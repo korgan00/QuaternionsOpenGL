@@ -1,0 +1,5 @@
+- up movement con espacio.
+- down movement con z,Z.
+
+- he situado la camara en un punto que no esta en los ejes principales.
+- he añadido esferas alrededor del eje central dando vueltas y oscilando

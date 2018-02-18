@@ -68,17 +68,51 @@ void drawLine(LINE line, COLOUR color, bool doDrawDots) {
 }
 void drawAxis() {
 
-	LINE xLine;
-	xLine.P.push_back({ 0.0, 0.0, 0.0 });
-	xLine.P.push_back({ 10.0, 0.0, 0.0 });
-	LINE yLine;
-	yLine.P.push_back({ 0.0, 0.0, 0.0 });
-	yLine.P.push_back({ 0.0, 10.0, 0.0 });
-	LINE zLine;
-	zLine.P.push_back({ 0.0, 0.0, 0.0 });
-	zLine.P.push_back({ 0.0, 0.0, 10.0 });
+    LINE xLine;
+    xLine.P.push_back({ 0.0, 0.0, 0.0 });
+    xLine.P.push_back({ 1000.0, 0.0, 0.0 });
+    LINE yLine;
+    yLine.P.push_back({ 0.0, 0.0, 0.0 });
+    yLine.P.push_back({ 0.0, 1000.0, 0.0 });
+    LINE zLine;
+    zLine.P.push_back({ 0.0, 0.0, 0.0 });
+    zLine.P.push_back({ 0.0, 0.0, 1000.0 });
 
-	drawLine(xLine, red);
-	drawLine(yLine, green);
-	drawLine(zLine, blue);
+    LINE negxLine;
+    negxLine.P.push_back({ 0.0, 0.0, 0.0 });
+    negxLine.P.push_back({ -1000.0, 0.0, 0.0 });
+    LINE negyLine;
+    negyLine.P.push_back({ 0.0, 0.0, 0.0 });
+    negyLine.P.push_back({ 0.0, -1000.0, 0.0 });
+    LINE negzLine;
+    negzLine.P.push_back({ 0.0, 0.0, 0.0 });
+    negzLine.P.push_back({ 0.0, 0.0, -1000.0 });
+
+    drawLine(xLine, red);
+    drawLine(yLine, green);
+    drawLine(zLine, blue);
+
+    drawLine(negxLine, { 0.3, 0.1, 0.1 });
+    drawLine(negyLine, { 0.1, 0.3, 0.1 });
+    drawLine(negzLine, { 0.1, 0.1, 0.3 });
 }
+
+void drawGround() {
+    LINE xLine;
+    LINE zLine;
+    int sign = 1;
+    for (int i = -100; i < 100; i+=1) {
+        if (i != 0) {
+            sign *= -1;
+            xLine.P.push_back({ sign * -1000.0, 0.0, i*5.0 });
+            xLine.P.push_back({ sign * 1000.0, 0.0, i*5.0 });
+            zLine.P.push_back({ i*5.0 , 0.0, sign * -1000.0 });
+            zLine.P.push_back({ i*5.0 , 0.0, sign * 1000.0 });
+        }
+    }
+
+    drawLine(xLine, { 0.3, 0.3, 0.3 });
+    drawLine(zLine, { 0.3, 0.3, 0.3 });
+}
+
+

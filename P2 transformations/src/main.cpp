@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <vector>
+#include <chrono>
 #include "GLInclude.h"
 #include "camera.h"
 #include "shapes.h"
@@ -20,6 +22,8 @@ void HandleReshape(int,int);
 void HandleIdle(void);
 
 void UpdateCameraState();
+void DrawScene();
+void InitScene();
 
 int fullscreen = FALSE;
 
@@ -35,7 +39,9 @@ FRUSTUM centerFrustum;
 
 int lastX = -1, lastY = -1;
 double rotateangle = 0;
+unsigned long long currentTime = 0;
 
+std::vector<ROTATING_DOT> dots;
 
 int main(int argc, char **argv)
 {
@@ -57,6 +63,7 @@ int main(int argc, char **argv)
     glutPassiveMotionFunc(HandleMousePassiveMotion);
     Init();
     InitCamera(0);
+    InitScene();
     Lighting();
     
     glutMainLoop();
@@ -133,7 +140,7 @@ void Render(void) {
     glPushMatrix();
     glRotatef(rotateangle,0.0,1.0,0.0);
 
-    drawAxis();
+    DrawScene();
     
     glPopMatrix();
 }
@@ -188,7 +195,7 @@ void HandleKeyboard(unsigned char key, int x, int y)
 
         case '-':
             t -= tSpeed;
-            t = t <0 ? 0:t;
+            t = t < 0 ? 0 : t;
             break;
 
         case 'h':
@@ -211,7 +218,15 @@ void HandleKeyboard(unsigned char key, int x, int y)
         case 'D':
             movement.x = -1;
             break;
+        case ' ':
+            movement.y = 1;
+            break;
+        case 'z':
+        case 'Z':
+            movement.y = 1;
+            break;
     }
+
 }
 // when mouse down
 void HandleMouseMotion(int x, int y) {
@@ -241,6 +256,7 @@ void HandleIdle(void)
 {
 //    rotateangle += rotatespeed;
     glutPostRedisplay();
+
 }
 
 void HandleReshape(int w,int h)
@@ -256,11 +272,11 @@ void InitCamera(int mode)
 {
     camera.aperture = 45;
 
-    camera.position.x = 0;
-    camera.position.y = 0;
+    camera.position.x = 5;
+    camera.position.y = 10;
     camera.position.z = 20;
     
-    camera.euler = { 0, 0, 0, {0, {0, 0, 0}}};
+    camera.euler = { -25, 25, 0, {0, {0, 0, 0}}};
     updateEulerOrientation(camera.euler);
     camera.direction = getForward(camera.euler);
     camera.up = getUp(camera.euler);
@@ -276,10 +292,46 @@ void UpdateCameraState() {
 
     // updateForwardMovement
     camera.position = Add(camera.position, MultiplyWithScalar(movement.z, camera.direction));
+    // updateUpMovement
+    camera.position = Add(camera.position, MultiplyWithScalar(movement.y, camera.up));
     // updateSideMovement
     VECTOR3D sideVector = Normalize(CrossProduct(camera.up, camera.direction));
     camera.position = Add(camera.position, MultiplyWithScalar(movement.x, sideVector));
-    //printf("%f, %f, %f\n", p.x, p.y, p.z);
 
     movement = { 0, 0, 0 };
+}
+
+void DrawScene() {
+    drawGround();
+    drawAxis();
+    auto start = std::chrono::high_resolution_clock::now().time_since_epoch();
+    currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(start).count();
+
+    for (std::vector<ROTATING_DOT>::iterator it = dots.begin(); it != dots.end(); ++it) {
+        (*it).pos = RotateWithQuaternion((*it).pos, (*it).q);
+        VECTOR3D interpolation = { 1, sin(currentTime * 0.002), 1 };
+        drawDot({ Multiply(interpolation, (*it).pos) }, (*it).radius, (*it).color);
+    }
+
+}
+
+void InitScene() {
+    EULER dotEulerRotation1 = { 1, 0, 0,{ 0,{ 0, 0, 0 } } };
+    EULER dotEulerRotation2 = { -1, 0, 0,{ 0,{ 0, 0, 0 } } };
+    updateEulerOrientation(dotEulerRotation1);
+    updateEulerOrientation(dotEulerRotation2);
+
+    auto start = std::chrono::high_resolution_clock::now().time_since_epoch();
+    currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(start).count();
+
+
+    dots.push_back({ { 5.0, 5.0, -5.0 }, 0.3f, { 0.5, 0, 0.7 }, dotEulerRotation1.orientation });
+    dots.push_back({ { -5.0, 5.0, -5.0 }, 0.3f, { 0.5, 0, 0.7 }, dotEulerRotation1.orientation });
+    dots.push_back({ { -5.0, 5.0, 5.0 }, 0.3f, { 0.5, 0, 0.7 }, dotEulerRotation1.orientation });
+    dots.push_back({ { 5.0, 5.0, 5.0 }, 0.3f, { 0.5, 0, 0.7 }, dotEulerRotation1.orientation });
+
+    dots.push_back({ { 3.0, 3.0, -3.0 }, 0.3f,{ 0.5, 0.7, 0 }, dotEulerRotation2.orientation });
+    dots.push_back({ { -3.0, 3.0, -3.0 }, 0.3f,{ 0.5, 0.7, 0 }, dotEulerRotation2.orientation });
+    dots.push_back({ { -3.0, 3.0, 3.0 }, 0.3f,{ 0.5, 0.7, 0 }, dotEulerRotation2.orientation });
+    dots.push_back({ { 3.0, 3.0, 3.0 }, 0.3f,{ 0.5, 0.7, 0 }, dotEulerRotation2.orientation });
 }
